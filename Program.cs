@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace gokartpls
 {
@@ -87,8 +88,31 @@ namespace gokartpls
             {
                 if (File.Exists(path))
                 {
-                    var lines = File.ReadAllLines(path).Where(l => !string.IsNullOrWhiteSpace(l)).ToList();
-                    if (lines.Count > 0) return lines;
+                    var text = File.ReadAllText(path);
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        // Try to extract names wrapped in single or double quotes: 'Name', "Name"
+                        var names = new List<string>();
+                        var matches = Regex.Matches(text, "'([^']*)'|\"([^\"]*)\"");
+                        foreach (Match m in matches)
+                        {
+                            var val = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
+                            if (!string.IsNullOrWhiteSpace(val)) names.Add(val.Trim());
+                        }
+                        if (names.Count > 0) return names;
+
+                        // Fallback: split by commas and trim quotes/whitespace
+                        var splitted = text.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(s => s.Trim().Trim('\'', '"'))
+                                            .Where(s => !string.IsNullOrWhiteSpace(s))
+                                            .ToList();
+                        if (splitted.Count > 0) return splitted;
+
+                        // Last fallback: treat as lines
+                        var lines = text.Split(new[] {"\r\n", "\n"}, StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+                        if (lines.Count > 0) return lines;
+                    }
                 }
             }
             catch { }
