@@ -23,7 +23,7 @@ namespace gokartpls
         }
         public void DisplayInfo()
         {
-            Console.WriteLine($"Név: {Cegnev}, Cím: {Cim}, Telefonszám: {Tel}, Weboldal: {Domain}");
+            Console.WriteLine($"Név: {Cegnev}, Cím: {Cim}, Tel.: {Tel}, Weboldal: {Domain}");
         }
     }
 
@@ -50,22 +50,13 @@ namespace gokartpls
         public static Racer Generate(string vezetekPath = "vezeteknevek.txt", string keresztPath = "keresztnevek.txt")
         {
             var rnd = new Random();
-            var vezetekList = File.ReadAllLines(vezetekPath)
-                .Select(s => s?.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .ToList();
-            if (vezetekList.Count == 0) throw new InvalidOperationException("no names");
-            var v = vezetekList[rnd.Next(vezetekList.Count)];
-            var keresztList = File.ReadAllLines(keresztPath)
-                .Select(s => s?.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .ToList();
-            if (keresztList.Count == 0) throw new InvalidOperationException("no names");
-            var k = keresztList[rnd.Next(keresztList.Count)];
 
-            // generate a birth date between 1950-01-01 and today-1y
-            var start = new DateTime(1950, 1, 1);
-            var end = DateTime.Today.AddYears(-1);
+            string[] ReadCsvNames(string path) => File.ReadAllText(path).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();
+            var vezetekList = ReadCsvNames(vezetekPath); if (vezetekList.Length == 0) throw new InvalidOperationException("no surnames"); var v = vezetekList[rnd.Next(vezetekList.Length)].Trim(new char[] { (char)39 });
+            var keresztList = ReadCsvNames(keresztPath); if (keresztList.Length == 0) throw new InvalidOperationException("no given names"); var k = keresztList[rnd.Next(keresztList.Length)].Trim(new char[] { (char)39 });
+
+            var start = new DateTime(1960, 1, 1);
+            var end = DateTime.Today.AddYears(-10);
             int rangeDays = (end - start).Days;
             var dob = start.AddDays(rnd.Next(rangeDays + 1));
 
@@ -116,15 +107,43 @@ namespace gokartpls
     {
         static void Main(string[] args)
         {
+            /*
+             KT
+             2026.09.07
+             Gokart időpontfoglaló - Egyéni kisprojekt
+             */
+
+            Console.WriteLine("KT");
+            Console.WriteLine("2026.09.07");
             Console.WriteLine("Gokart időpontfoglaló - Egyéni kisprojekt\n");
 
-            // existing demo gokart
             Gokart gokart = new Gokart("Sexrobot Gokart", "Levél, Erzsébet u. 2, 9221", "+36 20 213 9898", "https://www.sexrobotgokart.com");
             gokart.DisplayInfo();
 
             Console.WriteLine();
-            var racer = Racer.Generate();
+            var racer = Racer.Generate();   //test berakas
             racer.Display();
+
+            List<Racer> rlist = new List<Racer>(); // 150 versenyzo berakasa
+            for (int i = 0; i < 150; i++)
+            {
+                racer = Racer.Generate();
+                rlist.Add(racer);
+            }
+
+            Console.WriteLine($"\n{rlist.Count} versenyző betöltve!");
+
+            int[,] tablazat = { { }, { } };
+
+            string mainap = DateTime.Now.ToString("dd"); // megnezi hogy honap hanyadik napja van
+            Console.WriteLine(mainap);
+            
+            var rnd = new Random();
+            for (int i = 0; i < int.Parse(mainap); i++) // fele legyen 2 oras masik fele 1 oras: index + rnd.Next(0,1) , if 20 skip , random mindegyik 0-15 ig hogy legyen hely a 2 orasoknak 
+            {                                           // es mukodjon a skippeles es latszodjon hogy valahol piros
+                rnd.Next(0, rlist.Count);
+               
+            }
 
             Console.WriteLine("\nNyomjon meg egy billentyűt a kilépéshez...");
             Console.ReadKey();
