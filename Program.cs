@@ -50,11 +50,18 @@ namespace gokartpls
         public static Racer Generate(string vezetekPath = "vezeteknevek.txt", string keresztPath = "keresztnevek.txt")
         {
             var rnd = new Random();
-            var vezetek = ReadLinesOrDefault(vezetekPath);
-            var kereszt = ReadLinesOrDefault(keresztPath);
-
-            var v = vezetek[rnd.Next(vezetek.Count)].Trim();
-            var k = kereszt[rnd.Next(kereszt.Count)].Trim();
+            var vezetekList = File.ReadAllLines(vezetekPath)
+                .Select(s => s?.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
+            if (vezetekList.Count == 0) throw new InvalidOperationException("no names");
+            var v = vezetekList[rnd.Next(vezetekList.Count)];
+            var keresztList = File.ReadAllLines(keresztPath)
+                .Select(s => s?.Trim())
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
+            if (keresztList.Count == 0) throw new InvalidOperationException("no names");
+            var k = keresztList[rnd.Next(keresztList.Count)];
 
             // generate a birth date between 1950-01-01 and today-1y
             var start = new DateTime(1950, 1, 1);
@@ -80,43 +87,6 @@ namespace gokartpls
                 VersenyzoAzonosito = id,
                 Email = email
             };
-        }
-
-        static List<string> ReadLinesOrDefault(string path)
-        {
-            try
-            {
-                if (File.Exists(path))
-                {
-                    var text = File.ReadAllText(path);
-                    if (!string.IsNullOrWhiteSpace(text))
-                    {
-                        // Try to extract names wrapped in single or double quotes: 'Name', "Name"
-                        var names = new List<string>();
-                        var matches = Regex.Matches(text, "'([^']*)'|\"([^\"]*)\"");
-                        foreach (Match m in matches)
-                        {
-                            var val = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
-                            if (!string.IsNullOrWhiteSpace(val)) names.Add(val.Trim());
-                        }
-                        if (names.Count > 0) return names;
-
-                        // Fallback: split by commas and trim quotes/whitespace
-                        var splitted = text.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries)
-                                            .Select(s => s.Trim().Trim('\'', '"'))
-                                            .Where(s => !string.IsNullOrWhiteSpace(s))
-                                            .ToList();
-                        if (splitted.Count > 0) return splitted;
-
-                        // Last fallback: treat as lines
-                        var lines = text.Split(new[] {"\r\n", "\n"}, StringSplitOptions.RemoveEmptyEntries)
-                                        .Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-                        if (lines.Count > 0) return lines;
-                    }
-                }
-            }
-            catch { }
-            return new List<string> { "Kovács", "Dénes" };
         }
 
         static bool IsAtLeast18(DateTime dob)
