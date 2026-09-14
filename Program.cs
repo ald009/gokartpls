@@ -133,16 +133,25 @@ namespace gokartpls
 
             Console.WriteLine($"\n{rlist.Count} versenyző betöltve!");
 
-            int[,] tablazat = { { }, { } };
 
             string mainap = DateTime.Now.ToString("dd"); // megnezi hogy honap hanyadik napja van
             Console.WriteLine(mainap);
-            
+
+            List<Racer>[,] tablazat = { { }, { } };
+
             var rnd = new Random();
+            List<Racer> tarolo = new List<Racer>();
             for (int i = 0; i < int.Parse(mainap); i++) // fele legyen 2 oras masik fele 1 oras: index + rnd.Next(0,1) , if 20 skip , random mindegyik 0-15 ig hogy legyen hely a 2 orasoknak 
             {                                           // es mukodjon a skippeles es latszodjon hogy valahol piros
-                rnd.Next(0, rlist.Count);
-               
+                for (int j = 0; j < 11; j++)
+                {
+                    tarolo.Clear();
+                    for (int k = 0; k < rnd.Next(0,15); k++)
+                    {
+                        tarolo.Add(rlist[rnd.Next(0, rlist.Count)]);
+                    }
+                    tablazat[j, i] = tarolo;
+                }
             }
 
             Console.WriteLine("\nNyomjon meg egy billentyűt a kilépéshez...");
