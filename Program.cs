@@ -121,6 +121,13 @@ namespace gokartpls
 
             string BOLD = Console.IsOutputRedirected ? "" : "\x1b[1m";
             string NOBOLD = Console.IsOutputRedirected ? "" : "\x1b[22m";
+            // Background colors (use bright backgrounds for visibility)
+            string RESET = Console.IsOutputRedirected ? "" : "\x1b[0m";
+            string BG_RED = Console.IsOutputRedirected ? "" : "\x1b[101m";
+            string BG_GREEN = Console.IsOutputRedirected ? "" : "\x1b[102m";
+            string BG_YELLOW = Console.IsOutputRedirected ? "" : "\x1b[103m";
+            string FG_BLACK = Console.IsOutputRedirected ? "" : "\x1b[30m";
+            string FG_WHITE = Console.IsOutputRedirected ? "" : "\x1b[97m";
 
             Console.WriteLine("KT");
             Console.WriteLine("2026.09.07");
@@ -185,25 +192,54 @@ namespace gokartpls
 
                 }
             }
-            /*
             
-            foreach (var item in tablazat[5, 5])
+
+            
+            int cols = tablazat.GetLength(1);
+            int rows = tablazat.GetLength(0);
+
+            
+            Console.Write("Date       ");
+            for (int t = 0; t < rows; t++)
             {
-                item.Display();
+                int startHour = 8 + t;
+                int endHour = startHour + 1;
+                Console.Write($" {startHour:00}-{endHour:00} ");
             }
-            */
+            Console.WriteLine();
 
-            var color = "";
-            for (int i = 0; i < tablazat.GetLength(1); i++)
+            
+            DateTime today = DateTime.Today;
+            for (int c = 0; c < cols; c++)
             {
-                for (int j = 0; j < tablazat.GetLength(0); j++)
-                {
+                var day = today.AddDays(c);
+                Console.Write(day.ToString("yyyy.MM.dd") + " ");
 
-                    if (tablazat[j, i].Count == 20) {color = RED;} else if (tablazat[j, i].Count <= 19 && tablazat[j, i].Count > 17) {color = YELLOW;} else if (tablazat[j, i].Count <= 17 && tablazat[j, i].Count > 0) { color = GREEN; } else {color = NORMAL;}
-               
-                    Console.Write($"{color}{tablazat[j, i].Count}{NORMAL} ");
+                for (int r = 0; r < rows; r++)
+                {
+                    var cell = tablazat[r, c];
+                    int count = (cell == null) ? 0 : cell.Count;
+
+                    string bg;
+                    if (count >= 20) bg = BG_RED;
+                    else if (count > 17) bg = BG_YELLOW;
+                    else if (count > 0) bg = BG_GREEN;
+                    else bg = "";
+
+                    // choose foreground color to contrast
+                    string fg = string.IsNullOrEmpty(bg) ? "" : FG_BLACK;
+
+                    // print cell as background block with centered count (width 7)
+                    string content = count.ToString().PadLeft(2).PadRight(2);
+                    string padded = content.PadLeft(5).PadRight(5);
+
+                    if (!string.IsNullOrEmpty(bg))
+                        Console.Write($"{bg}{fg} {padded} {RESET}");
+                    else
+                        Console.Write($" {padded} ");
                 }
-                Console.WriteLine("");
+
+                Console.WriteLine();
             }
             
 
