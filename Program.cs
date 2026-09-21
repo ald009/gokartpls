@@ -133,8 +133,11 @@ namespace gokartpls
             var racer = Racer.Generate();   //test berakas
             racer.Display();
 
-            List<Racer> rlist = new List<Racer>(); // 150 versenyzo berakasa
-            for (int i = 0; i < 150; i++)
+            var rnd = new Random();
+            int v = rnd.Next(50, 150); // random versenyző szám 50-150 között MERT eleg rossz ha pl van 6 versenyzo és rosszul mukodik akkor minden
+
+            List<Racer> rlist = new List<Racer>();
+            for (int i = 0; i < v; i++)
             {
                 racer = Racer.Generate();
                 rlist.Add(racer);
@@ -147,28 +150,43 @@ namespace gokartpls
 
             List<Racer>[,] tablazat = new List<Racer>[11, 30 - int.Parse(mainap)];
 
-            var rnd = new Random();
-            
+            const int MaxPerCell = 20;
+
             for (int i = 0; i < (30 - int.Parse(mainap)); i++) // fele legyen 2 oras masik fele 1 oras: index + rnd.Next(0,1) , if 20 skip , random mindegyik 0-15 ig hogy legyen hely a 2 orasoknak 
             {                                           // es mukodjon a skippeles es latszodjon hogy valahol piros
                 for (int j = 0; j < 11; j++)
                 {
-                   
-                        int count = rnd.Next(0, 15);
 
-                        var selected = rlist
-                            .OrderBy(x => rnd.Next())
-                            .Take(count)
-                            .ToList();
+                    int count = rnd.Next(0, 19);
 
-                        if (tablazat[j, i] == null) tablazat[j, i] = selected;
-                    
+                     var selected = rlist
+                       .OrderBy(x => rnd.Next())
+                       .Take(count)
+                       .ToList();
+
+                    if (tablazat[j, i] == null) tablazat[j, i] = new List<Racer>();
+                    tablazat[j, i].AddRange(selected);
+                    if (tablazat[j, i].Count > MaxPerCell)
+                        tablazat[j, i].RemoveRange(MaxPerCell, tablazat[j, i].Count - MaxPerCell);
+
+                    if (j != 10 && tablazat[j, i].Count < 21)
+                    {
+                        count = rnd.Next(0, (int)Math.Round(tablazat[j, i].Count / 1.3));
+                        selected = tablazat[j, i]
+                           .OrderBy(x => rnd.Next())
+                           .Take(count)
+                           .ToList();
+
+                        if (tablazat[j + 1, i] == null) tablazat[j + 1, i] = new List<Racer>();
+                        tablazat[j + 1, i].AddRange(selected);
+                        if (tablazat[j + 1, i].Count > MaxPerCell)
+                            tablazat[j + 1, i].RemoveRange(MaxPerCell, tablazat[j + 1, i].Count - MaxPerCell);
+                    }
+
                 }
             }
             /*
-            Console.WriteLine("tablazat" +tablazat.GetLength(1));
-            Console.WriteLine("tablazata" + tablazat.GetLength(0));
-
+            
             foreach (var item in tablazat[5, 5])
             {
                 item.Display();
