@@ -29,6 +29,8 @@ namespace gokartpls
 
     class Racer
     {
+        private static Random rnd = new Random();
+
         public string Vezeteknev { get; set; }
         public string Keresztnev { get; set; }
         public DateTime SzuletesiDatum { get; set; }
@@ -49,7 +51,6 @@ namespace gokartpls
 
         public static Racer Generate(string vezetekPath = "vezeteknevek.txt", string keresztPath = "keresztnevek.txt")
         {
-            var rnd = new Random();
 
             string[] ReadCsvNames(string path) => File.ReadAllText(path).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();
             var vezetekList = ReadCsvNames(vezetekPath); if (vezetekList.Length == 0) throw new InvalidOperationException("no surnames"); var v = vezetekList[rnd.Next(vezetekList.Length)].Trim(new char[] { (char)39 });
@@ -113,6 +114,14 @@ namespace gokartpls
              Gokart időpontfoglaló - Egyéni kisprojekt
              */
 
+            string NORMAL = Console.IsOutputRedirected ? "" : "\x1b[39m";
+            string RED = Console.IsOutputRedirected ? "" : "\x1b[91m";
+            string GREEN = Console.IsOutputRedirected ? "" : "\x1b[92m";
+            string YELLOW = Console.IsOutputRedirected ? "" : "\x1b[93m";
+
+            string BOLD = Console.IsOutputRedirected ? "" : "\x1b[1m";
+            string NOBOLD = Console.IsOutputRedirected ? "" : "\x1b[22m";
+
             Console.WriteLine("KT");
             Console.WriteLine("2026.09.07");
             Console.WriteLine("Gokart időpontfoglaló - Egyéni kisprojekt\n");
@@ -135,24 +144,50 @@ namespace gokartpls
 
 
             string mainap = DateTime.Now.ToString("dd"); // megnezi hogy honap hanyadik napja van
-            Console.WriteLine(mainap);
 
-            List<Racer>[,] tablazat = { { }, { } };
+            List<Racer>[,] tablazat = new List<Racer>[11, 30 - int.Parse(mainap)];
 
             var rnd = new Random();
-            List<Racer> tarolo = new List<Racer>();
-            for (int i = 0; i < int.Parse(mainap); i++) // fele legyen 2 oras masik fele 1 oras: index + rnd.Next(0,1) , if 20 skip , random mindegyik 0-15 ig hogy legyen hely a 2 orasoknak 
+            
+            for (int i = 0; i < (30 - int.Parse(mainap)); i++) // fele legyen 2 oras masik fele 1 oras: index + rnd.Next(0,1) , if 20 skip , random mindegyik 0-15 ig hogy legyen hely a 2 orasoknak 
             {                                           // es mukodjon a skippeles es latszodjon hogy valahol piros
                 for (int j = 0; j < 11; j++)
                 {
-                    tarolo.Clear();
-                    for (int k = 0; k < rnd.Next(0,15); k++)
-                    {
-                        tarolo.Add(rlist[rnd.Next(0, rlist.Count)]);
-                    }
-                    tablazat[j, i] = tarolo;
+                   
+                        int count = rnd.Next(0, 15);
+
+                        var selected = rlist
+                            .OrderBy(x => rnd.Next())
+                            .Take(count)
+                            .ToList();
+
+                        if (tablazat[j, i] == null) tablazat[j, i] = selected;
+                    
                 }
             }
+            /*
+            Console.WriteLine("tablazat" +tablazat.GetLength(1));
+            Console.WriteLine("tablazata" + tablazat.GetLength(0));
+
+            foreach (var item in tablazat[5, 5])
+            {
+                item.Display();
+            }
+            */
+
+            var color = "";
+            for (int i = 0; i < tablazat.GetLength(1); i++)
+            {
+                for (int j = 0; j < tablazat.GetLength(0); j++)
+                {
+
+                    if (tablazat[j, i].Count == 20) {color = RED;} else if (tablazat[j, i].Count <= 19 && tablazat[j, i].Count > 17) {color = YELLOW;} else if (tablazat[j, i].Count <= 17 && tablazat[j, i].Count > 0) { color = GREEN; } else {color = NORMAL;}
+               
+                    Console.Write($"{color}{tablazat[j, i].Count}{NORMAL} ");
+                }
+                Console.WriteLine("");
+            }
+            
 
             Console.WriteLine("\nNyomjon meg egy billentyűt a kilépéshez...");
             Console.ReadKey();
