@@ -76,7 +76,7 @@ namespace gokartpls
 
             int cols = tablazat.GetLength(1); // cols
             int rows = tablazat.GetLength(0);
-
+            Console.WriteLine("");
             Console.Write("Date       ");
             for (int t = 0; t < rows; t++)
             {
@@ -265,7 +265,7 @@ namespace gokartpls
         static void ManualAdjustBookings(List<Racer> rlist, List<Racer>[,] tablazat, int MaxPerCell)
         {
             ShowRacers(rlist);
-
+            Gokart.PrintTable(tablazat);
             Console.WriteLine("\nAdja meg a versenyző(ke)t azonosító szerint (vesszővel elválasztva):");
             var idsLine = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(idsLine)) return;
